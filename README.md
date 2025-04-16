@@ -5,6 +5,12 @@ After a long while since Eclipse shutdown, we have decided to make it open sourc
 This is the same build from September 2024 but with a few optimizations to make it run better.
 <br/>
 <br/>
+Some features were not finished and are not planned to be finished, such as:
+<br/>
+- Proper Game Sessions
+<br/>
+- Quests
+
 Known Bugs:
 <br/>
 [-] Reloading doesn't set ammo to it's true amount.

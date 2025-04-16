@@ -26,38 +26,6 @@ DWORD inputThread(LPVOID lpReserved)
 
     return 0;
 }
-string CommitExecFunc = "";
-void(*oProcessEvent)(UObject* Obj, UFunction* Func, void* Params);
-void hkProcessEvent(UObject* Obj, UFunction* Func, void* Params)
-{
-    if (Func->GetFullName() == CommitExecFunc)
-    {
-        auto Ability = (UFortGameplayAbility*)Obj;
-        AFortPawn* Pawn = Ability->GetActivatingPawn();
-
-        if (Pawn)
-        {
-            auto currentWeapon = Pawn->CurrentWeapon;
-
-            if (currentWeapon)
-            {
-                auto Controller = static_cast<AFortPlayerControllerAthena*>(Pawn->Controller);
-                auto ReplicatedEntry = Inventory::FindItem(Controller, currentWeapon->ItemEntryGuid);
-
-                if (ReplicatedEntry)
-                {
-                    ReplicatedEntry->LoadedAmmo = currentWeapon->AmmoCount;
-
-                    Controller->WorldInventory->Inventory.MarkArrayDirty();
-                    Controller->WorldInventory->Inventory.MarkItemDirty(*ReplicatedEntry);
-                    Controller->WorldInventory->HandleInventoryLocalUpdate();
-                }
-            }
-        }
-    }
-
-    return oProcessEvent(Obj, Func, Params);
-}
 
 DWORD Initialize(LPVOID lpReserved)
 {
