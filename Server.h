@@ -70,6 +70,16 @@ namespace Server
 		if (a1->ReplicationDriver && a1->ClientConnections.Num() > 0 && !a1->ClientConnections[0]->InternalAck)
 			Server::ReplicateActors(a1->ReplicationDriver);
 
+		if (GetAsyncKeyState(VK_F7) & 0x01)
+		{
+			if (!Globals::bStartedAircraft)
+			{
+				LogInfo("Game: Bus was force started.");
+				Globals::GetGameState()->WarmupCountdownEndTime = 0.f;
+				Globals::GetGameState()->WarmupCountdownStartTime = 0.f;
+			}
+		}
+
 		return oTickFlush(a1);
 	}
 
