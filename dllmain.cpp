@@ -9,24 +9,6 @@
 #include "Pawn.h"
 #include "FortWeapon.h"
 
-DWORD inputThread(LPVOID lpReserved)
-{
-    while (true)
-    {
-        if (GetAsyncKeyState(VK_F7) & 0x01)
-        {
-            if (!Globals::bStartedAircraft)
-            {
-                LogInfo("Game: Bus was force started.");
-                Globals::GetGameState()->WarmupCountdownEndTime = 0.f;
-                Globals::GetGameState()->WarmupCountdownStartTime = 0.f;
-            }
-        }
-    }
-
-    return 0;
-}
-
 DWORD Initialize(LPVOID lpReserved)
 {
     AllocConsole();
@@ -73,8 +55,6 @@ DWORD Initialize(LPVOID lpReserved)
     Quests::Initialize();
 
     MH_EnableHook(MH_ALL_HOOKS);
-
-    CreateThread(nullptr, 0, inputThread, 0, 0, nullptr);
 
     return 0;
 }
