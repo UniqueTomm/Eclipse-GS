@@ -8,7 +8,6 @@ This is the same build from September 2024 but with a few optimizations to make 
 Some features were not finished and are not planned to be finished, such as:
 <br/>
 - Proper Game Sessions
-<br/>
 - Quests
 
 Known Bugs:
