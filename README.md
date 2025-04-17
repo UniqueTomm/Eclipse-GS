@@ -12,8 +12,6 @@ Some features were not finished and are not planned to be finished, such as:
 
 Known Bugs:
 <br/>
-[-] Reloading doesn't set ammo to it's true amount.
-<br/>
 [-] Chests have a chance of only dropping mats.
 <br/>
 [-] Teams have a chance to overflow.
