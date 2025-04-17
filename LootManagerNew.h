@@ -69,6 +69,31 @@ namespace LootManager
        return -1;
     }
 
+    EFortWeaponReloadType GetReloadType(UFortWeaponItemDefinition* ItemDefinition)
+    {
+        auto& WeaponStatHandle = ItemDefinition->WeaponStatHandle;
+
+        auto Table = WeaponStatHandle.DataTable;
+
+        if (!Table)
+            return EFortWeaponReloadType::ReloadWholeClip;
+
+        auto& RowMap = Table->RowMap;
+
+        for (int i = 0; i < RowMap.Num(); ++i)
+        {
+            auto& Pair = RowMap[i];
+
+            if (Pair.Key() == WeaponStatHandle.RowName)
+            {
+                return reinterpret_cast<FFortRangedWeaponStats*>(Pair.Second)->ReloadType;
+            }
+        }
+
+        return EFortWeaponReloadType::ReloadWholeClip;
+    }
+
+
     float RandomFloatForLoot(float AllWeightsSum)
     {
         return (rand() * 0.000030518509f) * AllWeightsSum;

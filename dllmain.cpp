@@ -51,7 +51,6 @@ DWORD Initialize(LPVOID lpReserved)
     Abilities::Initialize();
     CheatChecker::Initialize();
     FortPickup::Initialize();
-    TestHooks::Initialize();
     Quests::Initialize();
 
     MH_EnableHook(MH_ALL_HOOKS);

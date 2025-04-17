@@ -13,7 +13,7 @@ namespace Server
 	static UNetDriver* (*CreateNetDriver)(UEngine* a1, UWorld* a2, FName a3) = decltype(CreateNetDriver)(Memory::GetAddress(LOffsets::CreateNetDriver));
 	static bool (*InitListen)(UNetDriver* a1, void* InNotify, FURL& LocalURL, bool bReuseAddressAndPort, FString& Error) = decltype(InitListen)(Memory::GetAddress(LOffsets::InitListen));
 	static void (*SetWorld)(UNetDriver* a1, UWorld* a2) = decltype(SetWorld)(Memory::GetAddress(LOffsets::SetWorld));
-	static void (*ReplicateActors)(UReplicationDriver* a1);
+	static void (*ServerReplicateActors)(UReplicationDriver* a1);
 
 	static __int64 (*UWorld_GetNetMode)(UWorld* a1);
 	static __int64 (*AActor_GetNetMode)(AActor* a1);
@@ -54,21 +54,17 @@ namespace Server
 		World->LevelCollections[0].NetDriver = NetDriver;
 		World->LevelCollections[1].NetDriver = NetDriver;
 		
-		auto vft = *(void***)NetDriver->ReplicationDriver;
-		ReplicateActors = decltype(ReplicateActors)(vft[0x53]);
+		auto ReplicationDriverVFT = *(void***)NetDriver->ReplicationDriver;
+		ServerReplicateActors = decltype(ServerReplicateActors)(ReplicationDriverVFT[0x53]);
 
 		ServerManager::bIsListening = true;
-		LogInfo("Server::Listen: Server Listening on port {}", ServerManager::Port);
-		LogInfo("Update Server on Matchmaker!");
+		LogInfo("Server Listening on port {}", ServerManager::Port);
 	}
 
 	void hkTickFlush(UNetDriver* a1)
 	{
-		if (!a1)
-			return;
-
 		if (a1->ReplicationDriver && a1->ClientConnections.Num() > 0 && !a1->ClientConnections[0]->InternalAck)
-			Server::ReplicateActors(a1->ReplicationDriver);
+			ServerReplicateActors(a1->ReplicationDriver);
 
 		if (GetAsyncKeyState(VK_F7) & 0x01)
 		{
@@ -83,29 +79,28 @@ namespace Server
 		return oTickFlush(a1);
 	}
 
-	__int64 UWorld_GetNetModeHook(UWorld* a1)
+	enum ENetMode
 	{
-		return 1;
+		NM_Standalone,
+		NM_DedicatedServer,
+		NM_ListenServer,
+		NM_Client,
+		NM_MAX,
+	};
+
+	ENetMode hkUWorld_GetNetMode(UWorld* a1)
+	{
+		return ENetMode::NM_DedicatedServer;
 	}
 
-	__int64 AActor_GetNetModeHook(AActor* a1)
+	ENetMode hkAActor_GetNetMode(AActor* a1)
 	{
-		return 1;
+		return ENetMode::NM_DedicatedServer;
 	}
 
-	char hkKickPlayer(__int64 a1, __int64 a2, __int64 a3)
+	bool hkKickPlayer(AGameSession* GameSession, APlayerController* KickedPlayer, FText& KickReason)
 	{
-		return 1;
-	}
-
-	__int64 hkNoReservation(__int64 a1, __int64 a2, char a3, __int64 a4)
-	{
-		return 0;
-	}
-
-	__int64 hkValidationFailure(__int64* a1, __int64 a2)
-	{
-		return 0;
+		return true;
 	}
 
 	__int64 (*oCollectGarbage)(__int64);
@@ -166,7 +161,7 @@ namespace Server
 		HookingManager::CreateHook(Memory::GetAddress(LOffsets::TickFlush), hkTickFlush, (void**)&oTickFlush);
 		HookingManager::CreateHook(Memory::GetAddress(LOffsets::KickPlayer), hkKickPlayer);
 		HookingManager::CreateHook(Memory::GetAddress(LOffsets::CollectGarbage), hkCollectGarbage);
-		HookingManager::CreateHook(Memory::GetAddress(LOffsets::WorldGetNetMode), UWorld_GetNetModeHook);
+		HookingManager::CreateHook(Memory::GetAddress(LOffsets::WorldGetNetMode), hkUWorld_GetNetMode);
 		HookingManager::CreateHook(Memory::GetAddress(LOffsets::DispatchRequest), hkDispatchRequest, (void**)&oDispatchRequest);
 		HookingManager::CreateHook(Memory::GetAddress(LOffsets::GetMaxTickRate), hkGetMaxTickRate);
 		HookingManager::CreateHook(Memory::GetAddress(0x300905f), hkNoMCP);
